@@ -57,6 +57,9 @@ handle_call(get_loglevel, State) ->
 handle_call(_Request, State) ->
     {ok, ok, State}.
 
+handle_event({log, {lager_msg, Q, Metadata, Severity, {Date, Time}, _, Message}}, State) ->
+    handle_event({log, {lager_msg, Q, Metadata, Severity, {Date, Time}, Message}}, State);
+
 handle_event({log, {lager_msg, _, Metadata, Severity, {Date, Time}, Message}}, #state{level=L}=State) ->
     case lager_util:level_to_num(Severity) =< L of
         true ->
