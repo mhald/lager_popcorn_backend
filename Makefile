@@ -1,32 +1,23 @@
-PACKAGE := lager_popcorn_backend
-DIST_DIR := dist
-EBIN_DIR := ebin
-INCLUDE_DIRS := include
-DEPS_DIR := deps
-DEPS ?= lager
-DEPS_EZ := $(foreach DEP, $(DEPS), $(DEPS_DIR)/$(DEP).ez)
+#!/usr/bin/make
+REBAR=./rebar
+CT=./covertool
+EUNIT_DIR=./apps/popcorn/.eunit
+SRC_DIR=./apps/popcorn/src
+PROTO_DIR=./popcorn_proto
 
-all: compile
-
+all: clean deps compile test
+deps:
+				@$(REBAR) get-deps
 clean:
-	rm -rf $(DIST_DIR)
-	rm -rf $(EBIN_DIR)
+				@$(REBAR) clean
+compile: deps
+				@$(REBAR) compile
 
-distclean: clean
-	rm -rf $(DEPS_DIR)
+test:
+				@$(REBAR) compile eunit skip_deps=true
+				@$(CT) -cover $(EUNIT_DIR)/eunit.coverdata -output $(EUNIT_DIR)/coverage.xml -src $(SRC_DIR)
+proto:
+				rm -rf $(SRC_DIR)/*.proto
+				cp $(PROTO_DIR)/*.proto $(SRC_DIR)
+				@$(REBAR) compile
 
-package: compile $(DEPS_EZ)
-	rm -f $(DIST_DIR)/$(PACKAGE).ez
-	mkdir -p $(DIST_DIR)/$(PACKAGE)
-	cp -r $(EBIN_DIR) $(DIST_DIR)/$(PACKAGE)
-	$(foreach EXTRA_DIR, $(INCLUDE_DIRS), cp -r $(EXTRA_DIR) $(DIST_DIR)/$(PACKAGE);)
-	(cd $(DIST_DIR); zip -r $(PACKAGE).ez $(PACKAGE))
-
-$(DEPS_DIR):
-	./rebar get-deps
-
-$(DEPS_EZ): 
-	cd $(DEPS_DIR); $(foreach DEP, $(DEPS), zip -r $(DEP).ez $(DEP);)
-
-compile: $(DEPS_DIR)
-	./rebar compile
