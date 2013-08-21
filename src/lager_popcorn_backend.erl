@@ -11,13 +11,14 @@
          get_app_version/0
 ]).
 
--record(state, {socket            :: pid(),
-                lager_level_type  :: 'mask' | 'number' | 'unknown',
-                level             :: atom(),
-                popcorn_host      :: string(),
-                popcorn_port      :: number(),
-                node_role         :: string(),
-                node_version      :: string()
+-record(state, {socket :: pid(),
+                lager_level_type :: 'mask' | 'number' | 'unknown',
+                level :: atom(),
+                popcorn_host :: string(),
+                popcorn_port :: number(),
+                popcorn_address :: inet:ip_address(),
+                node_role :: string(),
+                node_version :: string()
 }).
 
 init(Params) ->
@@ -41,13 +42,21 @@ init(Params) ->
   Node_Role = proplists:get_value(node_role, Params, "no_role"),
   Node_Version = proplists:get_value(node_version, Params, "no_version"),
 
-  {ok, Socket} = gen_udp:open(0, [list]),
+ {Socket, Address} =
+   case inet:getaddr(Popcorn_Host, inet) of
+     {ok, Addr} ->
+       {ok, Sock} = gen_udp:open(0, [list]),
+       {Sock, Addr};
+     {error, _Err} ->
+       {undefined, undefined}
+   end,
 
   {ok, #state{socket = Socket,
               lager_level_type = Lager_Level_Type,
               level = Level,
               popcorn_host = Popcorn_Host,
               popcorn_port = Popcorn_Port,
+              popcorn_address = Address,
               node_role = Node_Role,
               node_version = Node_Version}}.
 
@@ -60,6 +69,8 @@ handle_call(get_loglevel, State) ->
 handle_call(_Request, State) ->
   {ok, ok, State}.
 
+handle_event({log, _}, #state{socket=S}=State) when S =:= undefined ->
+  {ok, State};
 handle_event({log, {lager_msg, Q, Metadata, Severity, {Date, Time}, _, Message}}, State) ->
   handle_event({log, {lager_msg, Q, Metadata, Severity, {Date, Time}, Message}}, State);
 
@@ -83,7 +94,7 @@ handle_event({log, {lager_msg, _, Metadata, Severity, {Date, Time}, Message}}, #
                                                   Line,
                                                   Pid),
       gen_udp:send(State#state.socket,
-                   State#state.popcorn_host,
+                   State#state.popcorn_address,
                    State#state.popcorn_port,
                    Encoded_Message);
     _ ->
