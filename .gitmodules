@@ -1,0 +1,3 @@
+[submodule "popcorn_proto"]
+	path = popcorn_proto
+	url = git@github.com:popcornlog/popcorn_proto.git
