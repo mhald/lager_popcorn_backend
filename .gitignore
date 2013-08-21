@@ -2,3 +2,5 @@
 deps
 ebin
 log
+src/popcorn.proto
+include/popcorn_pb.hrl
