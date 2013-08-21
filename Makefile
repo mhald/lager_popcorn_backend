@@ -18,6 +18,5 @@ test:
 				@$(CT) -cover $(EUNIT_DIR)/eunit.coverdata -output $(EUNIT_DIR)/coverage.xml -src $(SRC_DIR)
 proto:
 				rm -f $(SRC_DIR)/*.proto
-				cp $(PROTO_DIR)/*.proto $(SRC_DIR)
+				wget --no-check-certificate -O $(SRC_DIR)/popcorn.proto https://raw.github.com/popcornlog/popcorn_proto/master/popcorn.proto
 				@$(REBAR) compile
-
