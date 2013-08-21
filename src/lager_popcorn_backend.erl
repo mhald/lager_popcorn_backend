@@ -126,18 +126,23 @@ encode_protobuffs_message('mask', Node, Node_Role, Node_Version, Severity, _Date
   {Mega, Sec, Micro} = os:timestamp(),
   Timestamp = (Mega * 1000000 + Sec) * 1000000 + Micro,
   erlang:iolist_to_binary(
-    popcorn_pb:encode_logmessage({log_message,
+    popcorn_pb:encode_logmessage({logmessage,
                                   2,   %% version
                                   atom_to_list(Node),  %% node
                                   Node_Role,  %% role
                                   Node_Version,  %% version
                                   lager_util:level_to_num(Severity),  %% severity
-                                  list_to_binary(Message),  %% message
-                                  list_to_binary(opt(Module, "")),  %% module
-                                  list_to_binary(opt(Function, "")),  %% function
-                                  list_to_binary(opt(Line, "")),  %% line
+                                  safe_list_to_binary(Message),  %% message
+                                  safe_list_to_binary(opt(Module, "")),  %% module
+                                  safe_list_to_binary(opt(Function, "")),  %% function
+                                  safe_list_to_binary(opt(Line, "")),  %% line
                                   opt(Pid, <<>>),  %% Pid
                                   Timestamp})).
+
+safe_list_to_binary(L) when is_list(L) ->
+  list_to_binary(L);
+safe_list_to_binary(L) when is_binary(L) ->
+  L.
 
 %% Return the protobufs data for optional fields
 opt(undefined, Default) ->
