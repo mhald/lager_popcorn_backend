@@ -11,8 +11,6 @@ Vagrant::Config.run do |config|
   config.vm.box = "precise64"
   config.vm.box_url = "http://files.vagrantup.com/precise64.box"
   
-  config.vm.forward_port 9125, 9125
-  
   config.vm.host_name = "logging-server-backend.local"
   config.vm.network :hostonly, "10.10.10.98"
 
@@ -27,7 +25,7 @@ Vagrant::Config.run do |config|
       "apt-get install -q -y git; "\
       "wget -O /tmp/otp_src_R16B01.tar.gz http://www.erlang.org/download/otp_src_R16B01.tar.gz; " \
       "cd /tmp; tar xzvf otp_src_R16B01.tar.gz; cd otp_src_R16B01; ./configure; " \
-      "make; make install;" \
+      "make; make install;"
     config.vm.provision :shell, :inline => pkg_cmd
   end
 
