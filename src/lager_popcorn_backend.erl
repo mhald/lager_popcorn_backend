@@ -132,10 +132,10 @@ encode_protobuffs_message('mask', Node, Node_Role, Node_Version, Severity, _Date
                                   Node_Role,  %% role
                                   Node_Version,  %% version
                                   lager_util:level_to_num(Severity),  %% severity
-                                  Message,  %% message
-                                  opt(Module, <<>>),  %% module
-                                  opt(Function, <<>>),  %% function
-                                  opt(Line, <<>>),  %% line
+                                  list_to_binary(Message),  %% message
+                                  list_to_binary(opt(Module, "")),  %% module
+                                  list_to_binary(opt(Function, "")),  %% function
+                                  list_to_binary(opt(Line, "")),  %% line
                                   opt(Pid, <<>>),  %% Pid
                                   Timestamp})).
 
